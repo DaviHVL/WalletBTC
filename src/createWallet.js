@@ -1,45 +1,33 @@
-//Importando dependencias
+// Importando dependências
 const bip32 = require('bip32');
 const bip39 = require('bip39');
 const bitcoin = require('bitcoinjs-lib');
 
-//Definir a rede
-//bitcoin - rede principal - mainent
-//testnet - rede de teste - testnet
-// Define network parameters for Testnet4
-const testnet4 = {
-    messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: 'tb',
-    bip32: {
-      public: 0x043587cf,  // Base58 prefix for xpub on Testnet4
-      private: 0x04358394  // Base58 prefix for xprv on Testnet4
-    },
-    pubKeyHash: 0x6f,      // P2PKH starts with 'm' or 'n'
-    scriptHash: 0xc4,      // P2SH starts with '2'
-    wif: 0xef              // Wallet Import Format prefix
-  };
+// Definir a rede testnet
+const testnete = bitcoin.networks.testnet; // Usar a configuração testnet da biblioteca bitcoinjs-lib
 
-//Caminho de derivação de Carteiras HD
-const path = `m/49'/1'/0'/0`;
+// Caminho de derivação de carteiras HD para P2PKH
+const path = `m/44'/1'/0'/0/0`;
 
-//Criando a mnemonic para a seed (palavras de senha)
+// Criando a mnemonic para a seed (palavras de senha)
 let mnemonic = bip39.generateMnemonic();
-const seed = bip39.mnemonicToSeedSync(mnemonic); //Seed binário
+const seed = bip39.mnemonicToSeedSync(mnemonic); // Seed binária
 
-//Criando a raiz da carteira HD
-let root = bip32.fromSeed(seed, testnet4); //Chave raiz
+// Criando a raiz da carteira HD
+let root = bip32.fromSeed(seed, testnete); // Chave raiz
 
-//Criando uma conta - par pvt-pub keys
-let account = root.derivePath(path); //Chave que representa a conta
-let node = account.derive(0).derive(0); //nó que armazena uma chave pública e privada
+// Criando uma conta - par de chaves privadas e públicas
+let account = root.derivePath(path); // Chave que representa a conta
+let node = account.derive(0).derive(0); // Nó que armazena uma chave pública e privada
 
-//Criação de um Endereço Bitcoin
-let btcAdress = bitcoin.payments.p2pkh({
+// Criação de um endereço Bitcoin P2PKH
+let btcAddress = bitcoin.payments.p2wpkh({
     pubkey: node.publicKey,
-    network: testnet4,
+    network: testnete,
 }).address;
 
 console.log("Carteira gerada");
-console.log("Endereço: ", btcAdress);
+console.log("Endereço P2PKH:", btcAddress);
 console.log("Chave privada:", node.toWIF());
-console.log("Seed", mnemonic);
+console.log("Seed:", mnemonic);
+
